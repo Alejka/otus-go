@@ -3,66 +3,99 @@ package hw2
 import (
 	"fmt"
 	"strconv"
-	"unicode"
+	"strings"
+
+	//"unicode"
 	"unicode/utf8"
+
+	valid "github.com/asaskevich/govalidator"
 )
 
 func Unpack(str string) string {
-	unpackedStr := ""
+	// "a4bc2d5e" => "aaaabccddddde"
+	// "abcd" => "abcd"
+	// "45" => "" (некорректная строка)
 
-	if !utf8.ValidString(str) || utf8.RuneCountInString(str) == 0 {
-		return unpackedStr
+	// qwe\4\5 => qwe45 (*)
+	// qwe\45 => qwe44444 (*)
+	// qwe\\5 => qwe\\\\\ (*)
+
+	// qwe\5 => qwe5 (*)
+	// qwe\\5 => qwe\\\\\ (*)
+
+	runesCount := utf8.RuneCountInString(str)
+
+	if !utf8.ValidString(str) || runesCount == 0 {
+		return ""
 	}
 
-	lastRune := rune(-1)
-	lastCharRune := rune(-1)
-	repeatCountStr := "0"
-	repeatCount := 0
+	var unpackedStrBuilder strings.Builder
+	var repeatCountStrBuilder strings.Builder
+	repeatRune := rune(-1)
+	repeatCount := 1
+	runeIndex := 0
+	isEscapedLastRune := false
 
 	// a4bc2d5e => aaaabccddddde
-	fmt.Printf("-----------\nNEXT STR: %q\n-----------\n", str)
+	fmt.Printf("-----------\nNEXT STR: %q\nCount of runes: %d\n-----------\n", str, runesCount)
 	for _, rune := range str {
-		fmt.Printf("rune: %q\n", rune)
+		runeIndex++
+		fmt.Printf("runeIndex: %d\nrune: %q\n", runeIndex, rune)
 
-		if unicode.IsDigit(rune) { // if digit
-			repeatCountStr += string(rune)
-		} else { // if char
-			if lastCharRune != -1 {
-				repeatCount, _ = strconv.Atoi(repeatCountStr)
-				if repeatCount > 0 {
-					unpackedStr += repeatRunes(lastCharRune, repeatCount)
-				} else {
-					unpackedStr += string(lastCharRune)
+		// https://stackoverflow.com/questions/25540951/differences-between-isdigit-and-isnumber-in-unicode-in-go
+		// http://www.fileformat.info/info/unicode/category/Nd/list.htm
+		//if unicode.IsDigit(rune) {
+		if valid.IsInt(string(rune)) && !isEscapedLastRune { // if rune is digit
+			repeatCountStrBuilder.WriteRune(rune)
+			continue
+		} else {
+			// if rune is "escape" character
+			if rune == '\\' && !isEscapedLastRune {
+				isEscapedLastRune = true
+			} else {
+				// if rune is char: repeat previous rune
+				if repeatRune != -1 {
+					if repeatCountStrBuilder.Len() > 0 {
+						repeatCount, _ = strconv.Atoi(repeatCountStrBuilder.String())
+					} else {
+						repeatCount = 1
+					}
+					unpackedStrBuilder.WriteString(strings.Repeat(string(repeatRune), repeatCount))
 				}
-			}
 
-			lastCharRune = rune
-			repeatCountStr = "0"
+				repeatRune = rune
+				repeatCountStrBuilder.Reset()
+				isEscapedLastRune = false
+			}
 		}
 
-		lastRune = rune
-		fmt.Printf("unpackedStr: %q\n-----------\n", unpackedStr)
+		/*
+		   if runeIndex == runesCount {
+		       if repeatRune != -1 {
+		           if repeatCountStrBuilder.Len() > 0 {
+		               repeatCount, _ = strconv.Atoi(repeatCountStrBuilder.String())
+		           } else {
+		               repeatCount = 1
+		           }
+		           unpackedStrBuilder.WriteString(strings.Repeat(string(repeatRune), repeatCount))
+		       }
+		   }
+		*/
 	}
 
-	fmt.Printf("lastRune: %q\n-----------\n", lastRune)
-	if lastRune != -1 && !unicode.IsDigit(lastRune) { //@todo remove condition: lastRune != 1
-		unpackedStr += string(lastCharRune)
-	}
-	fmt.Printf("unpackedStr: %q\n-----------\n", unpackedStr)
-
-	return unpackedStr
-}
-
-func repeatRunes(rune rune, count int) string {
-	str := ""
-
-	if count < 1 {
-		return str
+	fmt.Printf("process last rune: \n")
+	if repeatRune != -1 {
+		if repeatCountStrBuilder.Len() > 0 {
+			repeatCount, _ = strconv.Atoi(repeatCountStrBuilder.String())
+		} else {
+			repeatCount = 1
+		}
+		fmt.Printf("repeatCount: %d\nrepeatRune: %q\n", repeatCount, repeatRune)
+		unpackedStrBuilder.WriteString(strings.Repeat(string(repeatRune), repeatCount))
 	}
 
-	for i := 1; i <= count; i++ {
-		str += string(rune)
-	}
-
-	return str
+	tmpstr := unpackedStrBuilder.String()
+	fmt.Printf("READY STR: %q\n", tmpstr)
+	return tmpstr
+	//return unpackedStrBuilder.String()
 }
