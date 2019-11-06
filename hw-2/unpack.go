@@ -9,6 +9,7 @@ import (
 	valid "github.com/asaskevich/govalidator"
 )
 
+// Unpack unpacks the string according to the format string
 func Unpack(str string) (string, error) {
 	var err error
 
