@@ -22,33 +22,66 @@ type Item struct {
 }
 
 func (i Item) Value() interface{} {
+    return i.value
 }
 
 func (i Item) Next() *Item {
+    return i.next
 }
 
 func (i Item) Prev() *Item {
+    return i.prev
 }
 
 type List struct {
-    data []Item
     len int
+    first *Item
+    last *Item
 }
 
 func (l List) Len() int {
+    return l.len
 }
 
 func (l List) First() *Item {
+    return l.first
 }
 
 func (l List) Last() *Item {
+    return l.last
 }
 
 func (l *List) PushFront(v interface{}) {
+    i := Item{
+        value: v,
+    }
+    
+    if l.first == nil {
+        l.last = &i
+    } else {
+        l.first.prev = &i
+    }
+    
+    l.first = &i
+    
+    l.len++
 }
 
 func (l *List) PushBack(v interface{}) {
+    i := Item{
+        value: v,
+    }
+    
+    if l.last == nil {
+        l.first = &i
+    } else {
+        l.last.next = &i
+    }
+    
+    l.last = &i
+    
+    l.len++
 }
 
-func (l *List) Remove(i Item) {
-}
+//func (l *List) Remove(i Item) {
+//}
