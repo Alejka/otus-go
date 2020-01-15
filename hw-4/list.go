@@ -83,5 +83,22 @@ func (l *List) PushBack(v interface{}) {
     l.len++
 }
 
-//func (l *List) Remove(i Item) {
-//}
+func (l *List) Remove(i *Item) {
+    if i.prev == nil {
+        l.first = i.next
+    } else {
+        i.prev.next = i.next
+    }
+    
+    if i.next == nil {
+        l.last = i.prev
+    } else {
+        i.next.prev = i.prev
+    }
+    
+    // avoid memory leaks
+    i.next = nil
+	i.prev = nil
+    
+    l.len--;
+}

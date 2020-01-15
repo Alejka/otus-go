@@ -34,9 +34,9 @@ func TestLast(t *testing.T) {
     
     l.PushBack(1)
     l.PushBack(2)
-    l.PushBack(3)
+    l.PushBack("last")
     
-    require.Equal(t, 3, l.Last().Value(), "Testing a length of the list: " + fmt.Sprintf("%v", l))
+    require.Equal(t, "last", l.Last().Value(), "Testing a length of the list: " + fmt.Sprintf("%v", l))
 }
 
 func TestPushFront(t *testing.T) {
@@ -45,9 +45,10 @@ func TestPushFront(t *testing.T) {
     l.PushBack(1)
     l.PushBack(2)
     l.PushBack(3)
-    l.PushFront(4)
+    l.PushFront("first")
     
-    require.Equal(t, 4, l.First().Value(), "Testing a length of the list: " + fmt.Sprintf("%v", l))
+    require.Equal(t, "first", l.First().Value(), "Testing a length of the list: " + fmt.Sprintf("%v", l))
+    require.Equal(t, 4, l.Len(), "Testing a length of the list: " + fmt.Sprintf("%v", l))
 }
 
 func TestPushBack(t *testing.T) {
@@ -58,4 +59,17 @@ func TestPushBack(t *testing.T) {
     l.PushBack(3)
     
     require.Equal(t, 3, l.Len(), "Testing a length of the list: " + fmt.Sprintf("%v", l))
+}
+
+func TestRemove(t *testing.T) {
+    var l = List{}
+    
+    l.PushBack(1)
+    l.PushBack(2)
+    l.PushBack(3)
+    
+    //i := l.Last()
+    //l.Remove(i.Prev())
+    
+    //require.Equal(t, 2, l.Len(), "Testing a length of the list: " + fmt.Sprintf("%v", l))
 }
